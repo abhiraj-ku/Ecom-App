@@ -1,0 +1,15 @@
+{
+  "name": "tshirt-store",
+  "version": "1.0.0",
+  "description": "backend api for tshirt ecom app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "backend",
+    "api"
+  ],
+  "author": "Abhishek kumar",
+  "license": "ISC"
+}
