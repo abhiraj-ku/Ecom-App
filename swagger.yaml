@@ -37,7 +37,7 @@ paths:
     get:
       tags:
         - Home
-      summary: returns a greet message from LCO
+      summary: returns a greet message from backend
       responses:
         200:
           description: All good success
