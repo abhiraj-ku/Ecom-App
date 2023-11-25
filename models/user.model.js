@@ -20,7 +20,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: [true, "Please provide a password"],
     minlength: [6, "Password should be greater than 6 characters"],
-    select: false,
   },
   role: {
     type: String,
@@ -49,7 +48,7 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
   }
-  this.password = await bcrypt.hash(this.paasword, 10);
+  this.password = await bcrypt.hash(this.password, 10);
 });
 
 //validate the given password
@@ -63,18 +62,6 @@ userSchema.methods.getJwtTokens = function () {
     expiresIn: process.env.JWT_EXPIRY,
   });
 };
-
-//generate forgot password token
-//approach 1 .  function makeid(length) {
-//   let result = "";
-//   let characters =
-//     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789!@#$%^&*()";
-//   let charLegth = characters.length;
-//   for (let i = 0; i < length; i++) {
-//     result += characters.charAt(Math.floor(Math.random() * charLegth));
-//   }
-//   return result;
-// }
 
 //by using the crypto package built in the node itself
 userSchema.methods.getforgotPassToken = function () {

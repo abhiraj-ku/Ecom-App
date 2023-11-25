@@ -1,6 +1,6 @@
 const User = require("../models/user.model.js");
 const BigPromise = require("../middlewares/bigPromise");
-const customError = require("../utils/customError");
+// const customError = require("../utils/customError");
 const cookieToken = require("../utils/cookieToken.js");
 
 //exporting the controllers
