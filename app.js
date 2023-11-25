@@ -19,14 +19,16 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(fileUpload());
 
-//morgon middleware needs to be on top
+//morgon middleware needs to be on top (this is logger which logs usera activity)
 app.use(morgon("tiny"));
 
 //import all the routes here
-const home = require("./routes/home");
+const homeRoute = require("./routes/homeRoute");
+const userRoute = require("./routes/userRoute");
 
 //router middleware
-app.use("/api/v1", home);
+app.use("/api/v1", homeRoute);
+app.use("/api/v1", userRoute);
 
 //export app
 module.exports = app;
