@@ -1,6 +1,7 @@
 const app = require("./app");
 const connectDb = require("./config/db");
 require("dotenv").config();
+// const mongoose = require("mongoose");
 
 //connection with Database is done here
 connectDb();

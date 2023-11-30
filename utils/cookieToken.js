@@ -7,7 +7,7 @@ const cookieToken = (user, res) => {
     ),
     httpOnly: true,
   };
-
+  user.password = undefined;
   res.status(200).cookie("token", token, options).json({
     //json because we want to send it to frontend for success message
     success: true,
