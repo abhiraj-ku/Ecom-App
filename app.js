@@ -17,7 +17,12 @@ app.use(express.urlencoded({ extended: true }));
 
 //coookie and fileUpload middlewares
 app.use(cookieParser());
-app.use(fileUpload());
+app.use(
+  fileUpload({
+    useTempFiles: true,
+    tempFileDir: "/tmp/",
+  })
+);
 
 //morgon middleware needs to be on top (this is logger which logs usera activity)
 app.use(morgon("tiny"));
