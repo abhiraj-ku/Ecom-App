@@ -9,9 +9,9 @@ connectDb();
 
 //Cloudinary upload here
 cloudinary.config({
-  cloud_name: "viewhub",
-  api_key: "253923537927214",
-  api_secret: "OsKd3SLG1BzM3tR1tWGpQ3rzp_s",
+  cloud_name: process.env.CLOUDINARY_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 //starting the server
 app.listen(process.env.PORT, () => {

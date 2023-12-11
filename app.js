@@ -24,7 +24,7 @@ app.use(
   })
 );
 
-//morgon middleware needs to be on top (this is logger which logs usera activity)
+//morgon middleware needs to be on top (this is logger which logs users activity)
 app.use(morgon("tiny"));
 
 //import all the routes here
