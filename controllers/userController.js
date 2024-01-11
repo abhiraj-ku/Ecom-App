@@ -1,6 +1,6 @@
 const User = require("../models/user.model.js");
 const BigPromise = require("../middlewares/bigPromise");
-const customError = require("../utils/customError");
+// const customError = require("../utils/customError");
 const fileUpload = require("express-fileupload");
 const cookieToken = require("../utils/cookieToken.js");
 const Cloudinary = require("cloudinary");
@@ -12,7 +12,7 @@ module.exports.signup = BigPromise(async (req, res, next) => {
   if (req.files) {
     let file = req.files.photo;
     result = await Cloudinary.v2.uploader.upload(file, {
-      folder: "users",
+      folder: "Ecom",
       width: 150,
       crop: "scale",
     });
