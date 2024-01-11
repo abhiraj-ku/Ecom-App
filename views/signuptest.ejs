@@ -25,37 +25,46 @@
   <body class="bg-black text-white">
     <div class="container">
       <h1>Post Form</h1>
-      <form method="POST" action="/postit" enctype="multipart/form-data">
+      <form method="POST" action="/api/v1/signup" enctype="multipart/form-data">
         <!-- 
             enctype="multipart/form-data"
             is used to handle file upload
         -->
 
         <div class="mb-3">
-          <label for="FirstName" class="form-label">First Name</label>
+          <label for="name" class="form-label">name</label>
           <input
             type="text"
-            name="firstName"
+            name="name"
             class="form-control"
-            id="FirstName"
+            id="name"
           />
         </div>
         <div class="mb-3">
-          <label for="LastName" class="form-label">LastName</label>
+          <label for="password" class="form-label">password</label>
           <input
-            type="text"
-            name="lastName"
+            type="password"
+            name="password"
             class="form-control"
-            id="LastName"
+            id="password"
           />
         </div>
         <div class="mb-3">
-          <label for="samplefile" class="form-label">samplefile</label>
+            <label for="email" class="form-label">email</label>
+            <input
+              type="email"
+              name="email"
+              class="form-control"
+              id="email"
+            />
+          </div>
+        <div class="mb-3">
+          <label for="photo" class="form-label">photo</label>
           <input
             type="file"
             class="form-control"
-            name="samplefile"
-            id="samplefile"
+            name="photo"
+            id="photo"
             multiple
           />
         </div>

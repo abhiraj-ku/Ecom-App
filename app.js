@@ -12,8 +12,8 @@ const swaggerDocument = YAML.load("./swagger.yaml");
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 //regular middlewares
-app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
 //coookie and fileUpload middlewares
 app.use(cookieParser());
@@ -23,6 +23,10 @@ app.use(
     tempFileDir: "/tmp/",
   })
 );
+
+//setting up template engine
+app.set("view engine","ejs")
+
 
 //morgon middleware needs to be on top (this is logger which logs users activity)
 app.use(morgon("tiny"));
@@ -34,6 +38,11 @@ const userRoute = require("./routes/userRoute");
 //router middleware
 app.use("/api/v1", homeRoute);
 app.use("/api/v1", userRoute);
+
+//test route for template engine
+app.get("/signuptest",(req,res)=>{
+  res.render("signuptest")
+})
 
 //export app
 module.exports = app;

@@ -30,7 +30,7 @@ const userSchema = new mongoose.Schema({
       type: String,
       required: true,
     },
-    secured_url: {
+    secure_url: {
       type: String,
       required: true,
     },

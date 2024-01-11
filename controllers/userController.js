@@ -8,21 +8,25 @@ const Cloudinary = require("cloudinary");
 //exporting the controllers
 module.exports.signup = BigPromise(async (req, res, next) => {
   //check if file is there or not
-  let result;
-  if (req.files) {
-    let file = req.files.photo;
-    result = await Cloudinary.v2.uploader.upload(file, {
+  // let result;
+  if (!req.files) {
+    return next(res.send("Image is required !"))
+  }
+
+
+  const { name, email, password } = req.body;
+
+  if (!email || !name || !password) {
+    return new Error("Name ,password and email are required");
+  }
+  let file = req.files.photo;
+    const result = await Cloudinary.v2.uploader.upload(file.tempFilePath, {
       folder: "Ecom",
       width: 150,
       crop: "scale",
     });
-  }
-
-  const { name, email, password } = req.body;
+  
   //check for email
-  if (!email || !name || !password) {
-    return next(new Error("Name ,password and email are required"));
-  }
   //creating the user and connecting to mongoDb
   const user = await User.create({
     name,
@@ -33,6 +37,7 @@ module.exports.signup = BigPromise(async (req, res, next) => {
       secure_url: result.secure_url,
     },
   });
+
 
   //calling cookieToken method
   cookieToken(user, res);
