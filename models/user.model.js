@@ -52,8 +52,8 @@ userSchema.pre("save", async function (next) {
 });
 
 //validate the given password
-userSchema.methods.isPassCorrect = async function (userPass) {
-  return await bcrypt.compare(this.password, userPass);
+userSchema.methods.isPassCorrect = async function (pass) {
+  return await bcrypt.compare(pass,this.password);
 };
 
 //generating the jwt tokens using methods only
