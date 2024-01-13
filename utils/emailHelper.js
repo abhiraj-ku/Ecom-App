@@ -1,31 +1,25 @@
-const nodemailer =require("nodemailer")
+const nodemailer = require("nodemailer");
 
-const sendEmail= async(options)=>{
+const sendEmail = async (options) => {
+  const transporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port: process.env.SMTP_PORT,
 
-    const transporter = nodemailer.createTransport({
-        host: "smtp.forwardemail.net",
-        port: 465,
-       
-        auth: {
-          // TODO: replace `user` and `pass` values from <https://forwardemail.net>
-          user: "REPLACE-WITH-YOUR-ALIAS@YOURDOMAIN.COM",
-          pass: "REPLACE-WITH-YOUR-GENERATED-PASSWORD",
-        },
-      });
-    const message={
-        from: '"Fred Foo 👻" <foo@example.com>', // sender address
-        to: options.mails, // list of receivers
-        subject: "Hello ✔", // Subject line
-        text: "Hello world?", // plain text body
-        html: "<b>Hello world?</b>", // html body
-}
+    auth: {
+      // TODO: replace `user` and `pass` values from <https://forwardemail.net>
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASS,
+    },
+  });
+  const message = {
+    from: "developer.raj77@gmail.com",
+    to: options.mails,
+    subject: options.subject,
+    text: options.message,
+  };
 
-    
-      
-        // send mail with defined transport object
-    await transporter.sendMail(message);
+  // send mail with defined transport object
+  await transporter.sendMail(message);
+};
 
-}
-
-
-module.exports = sendEmail
+module.exports = sendEmail;

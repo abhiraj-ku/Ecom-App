@@ -13,7 +13,7 @@ module.exports.signup = BigPromise(async (req, res, next) => {
   //check if file is there or not
   // let result;
   if (!req.files || !req.files.photo) {
-    return next(res.status(400).send("Image is required!"))
+    return next(res.status(400).send("Image is required!"));
   }
 
   //from body we get required fields to verify
@@ -24,11 +24,11 @@ module.exports.signup = BigPromise(async (req, res, next) => {
   }
   let file = req.files.photo;
   const result = await Cloudinary.v2.uploader.upload(file.tempFilePath, {
-      folder: "Ecom",
-      width: 150,
-      crop: "scale",
-    });
-  
+    folder: "Ecom",
+    width: 150,
+    crop: "scale",
+  });
+
   //check for email
   //creating the user and connecting to mongoDb
   const user = await User.create({
@@ -41,44 +41,55 @@ module.exports.signup = BigPromise(async (req, res, next) => {
     },
   });
 
-  
-
   //calling cookieToken method
   cookieToken(user, res);
 });
 
 //login controller
-module.exports.login= BigPromise(async(req,res,next)=>{
+module.exports.login = BigPromise(async (req, res, next) => {
   //user will provide us the login details
-  const {email ,password}=req.body;
-
+  const { email, password } = req.body;
   //check for presence of the email & password
-  if(!email || !password){
-    return next(new CustomError('please provide valid email and password',400));
+  if (!email || !password) {
+    return next(
+      new CustomError("please provide valid email and password", 400)
+    );
   }
-
   //if present get the details from db
-  const user = await User.findOne({email}).select("+password")
-  if(!user){
-    return next(new CustomError('Email not found!',400));
+  try {
+    const foundUser = await User.findOne({ email }).select("+password");
+    if (!foundUser) {
+      return next(new CustomError("Email not found!", 400));
+    }
+    //for checking password
+    const isPasswordCorrect = await foundUser.isPassCorrect(password);
+    if (!isPasswordCorrect) {
+      return next(new CustomError("Incorrect password", 400));
+    }
+    cookieToken(foundUser, res);
+  } catch (error) {
+    console.log("Login Error :", error);
+    return next(new CustomError("Internal Server Error", 500));
   }
+});
 
-  //for checking password
-  const isPasswordCorrect = await user.isPassCorrect(password)
-  if(!isPasswordCorrect){
-    return next(new CustomError('You have entered wrong password',400));
+module.exports.logout = BigPromise(async (req, res, next) => {
+  try {
+    res.cookie("token", null, {
+      expires: new Date(Date.now()),
+      httpOnly: true,
+    });
+    res.status(200).end();
+  } catch (err) {
+    console.log("Logout error:", err);
+    res.status(500).send({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
-  cookieToken(user, res);
-})
+});
 
-module.exports.logout= BigPromise(async(req,res,next)=>{
-  res.cookie('token',null,{
-    expires: new Date(Date.now()),
-    httpOnly:true
-  })
-  res.status(200).send({
-    sucess:true,
-    message:'Logout is sucessful'
-  })
-
-})
+//forgot password controller
+module.exports.forgotPassword = BigPromise(async () => {
+  //getting the mail first
+});
