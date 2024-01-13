@@ -1,10 +1,9 @@
 const User = require("../models/user.model.js");
 const BigPromise = require("../middlewares/bigPromise");
-
-const fileUpload = require("express-fileupload");
 const cookieToken = require("../utils/cookieToken.js");
 const Cloudinary = require("cloudinary");
 const CustomError = require("../utils/customError");
+const sendEmail = require("../utils/emailHelper.js");
 
 //exporting the controllers
 
@@ -90,6 +89,43 @@ module.exports.logout = BigPromise(async (req, res, next) => {
 });
 
 //forgot password controller
-module.exports.forgotPassword = BigPromise(async () => {
+module.exports.forgotPassword = BigPromise(async (req, res, next) => {
   //getting the mail first
+  const { email } = req.body;
+  const getUser = await User.findOne({ email });
+  if (!getUser) {
+    return next(new CustomError("Email not registerd", 500));
+  }
+  const forgotToken = getUser.getforgotPassToken();
+  //we are doing this because we do not want to save th user according to specified model in mongoose model(kam chalau h)
+  await getUser.save({ validateBeforeSave: false });
+
+  //at this url we will send the mail
+  const emailUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/password/reset/${forgotToken}`;
+
+  const message = `Copy this link to get reset option\n\n<a href="${emailUrl}">link</a>`;
+
+  const emailObject = {
+    mail: getUser.email,
+    subject: "Ecom App - password reset link",
+    message: message,
+  };
+  try {
+    await sendEmail(emailObject);
+
+    res.status(200).json({
+      success: true,
+      message: "Email sent sucessfuly",
+    });
+  } catch (error) {
+    getUser.forgotPasstoken = undefined;
+    getUser.forgotPassExpiry = undefined;
+    await getUser.save({ validateBeforeSave: false });
+
+    return next(new CustomError(error.message, 500));
+  }
 });
+
+module.exports.passwordReset = BigPromise(async (req, res, next) => {});
