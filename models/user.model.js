@@ -75,6 +75,7 @@ userSchema.methods.getforgotPassToken = function () {
   //time of hash token
   this.forgotPassExpiry = Date.now() + 20 * 60 * 1000;
 
+  console.log(this.forgotPasstoken);
   return forgotToken;
 };
 //exporting the model

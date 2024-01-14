@@ -4,128 +4,249 @@ const cookieToken = require("../utils/cookieToken.js");
 const Cloudinary = require("cloudinary");
 const CustomError = require("../utils/customError");
 const sendEmail = require("../utils/emailHelper.js");
+const crypto = require("crypto");
 
 //exporting the controllers
 
 //Signup controller
 module.exports.signup = BigPromise(async (req, res, next) => {
-  //check if file is there or not
-  // let result;
-  if (!req.files || !req.files.photo) {
-    return next(res.status(400).send("Image is required!"));
+  try {
+    // Checking if the User has uploaded an image
+    if (!req.files || !req.files.photo) {
+      return next(res.status(400).send("Image is required!"));
+    }
+
+    // Extracting user Information from request body
+    const { name, email, password } = req.body;
+
+    // Check if all required fields are provided
+    if (!email || !name || !password) {
+      return res.status(400).send("Name, password, and email are required");
+    }
+
+    // Upload the user's image to Cloudinary
+    let file = req.files.photo;
+    const result = await Cloudinary.v2.uploader.upload(file.tempFilePath, {
+      folder: "Ecom",
+      width: 150,
+      crop: "scale",
+    });
+
+    // Create and store user details in database
+    const user = await User.create({
+      name,
+      email,
+      password,
+      photo: {
+        id: result.public_id,
+        secure_url: result.secure_url,
+      },
+    });
+
+    //Generate an authentication token for the user
+    cookieToken(user, res);
+
+    // Send a success response
+    res.status(200).json({
+      success: true,
+      message: "User created successfully!",
+    });
+  } catch (error) {
+    console.error("Error creating User", error);
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error !",
+    });
   }
-
-  //from body we get required fields to verify
-  const { name, email, password } = req.body;
-
-  if (!email || !name || !password) {
-    return res.status(400).send("Name, password, and email are required");
-  }
-  let file = req.files.photo;
-  const result = await Cloudinary.v2.uploader.upload(file.tempFilePath, {
-    folder: "Ecom",
-    width: 150,
-    crop: "scale",
-  });
-
-  //check for email
-  //creating the user and connecting to mongoDb
-  const user = await User.create({
-    name,
-    email,
-    password,
-    photo: {
-      id: result.public_id,
-      secure_url: result.secure_url,
-    },
-  });
 
   //calling cookieToken method
-  cookieToken(user, res);
 });
 
-//login controller
+// Login Controller
 module.exports.login = BigPromise(async (req, res, next) => {
-  //user will provide us the login details
-  const { email, password } = req.body;
-  //check for presence of the email & password
-  if (!email || !password) {
-    return next(
-      new CustomError("please provide valid email and password", 400)
-    );
-  }
-  //if present get the details from db
   try {
+    // User provides login details
+    const { email, password } = req.body;
+
+    // Check for the presence of email & password
+    if (!email || !password) {
+      return next(
+        new CustomError("Please provide valid email and password", 400)
+      );
+    }
+
+    // Retrieve user details from the database
     const foundUser = await User.findOne({ email }).select("+password");
+
+    // If user not found, return an error
     if (!foundUser) {
-      return next(new CustomError("Email not found!", 400));
+      return next(new CustomError("Email not found", 404));
     }
-    //for checking password
+
+    // Check if the provided password is correct
     const isPasswordCorrect = await foundUser.isPassCorrect(password);
+
+    // If password is incorrect, return an error
     if (!isPasswordCorrect) {
-      return next(new CustomError("Incorrect password", 400));
+      return next(new CustomError("Incorrect password", 401));
     }
+
+    // Generate and set an authentication token for the user
     cookieToken(foundUser, res);
+
+    // Send a success response
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      user: {
+        // Include any relevant user details in the response
+        id: foundUser._id,
+        name: foundUser.name,
+        email: foundUser.email,
+        // ... other user details ...
+      },
+    });
   } catch (error) {
-    console.log("Login Error :", error);
-    return next(new CustomError("Internal Server Error", 500));
+    // Handle errors
+    console.error("Login Error:", error);
+
+    // Send an error response
+    res.status(500).json({
+      success: false,
+      message: "Internal Server Error",
+    });
   }
 });
-
+// Logout Controller
 module.exports.logout = BigPromise(async (req, res, next) => {
   try {
+    // Clear the authentication token cookie
     res.cookie("token", null, {
-      expires: new Date(Date.now()),
+      expires: new Date(0), // Set expiration to a past date to immediately expire the cookie
       httpOnly: true,
     });
-    res.status(200).end();
-  } catch (err) {
-    console.log("Logout error:", err);
-    res.status(500).send({
+
+    // Send a success response
+    res.status(200).json({
+      success: true,
+      message: "Logout successful",
+    });
+  } catch (error) {
+    // Handle errors
+    console.error("Logout Error:", error);
+
+    // Send an error response
+    res.status(500).json({
       success: false,
       message: "Internal Server Error",
     });
   }
 });
 
-//forgot password controller
+// Forgot Password Controller
 module.exports.forgotPassword = BigPromise(async (req, res, next) => {
-  //getting the mail first
-  const { email } = req.body;
-  const getUser = await User.findOne({ email });
-  if (!getUser) {
-    return next(new CustomError("Email not registerd", 500));
-  }
-  const forgotToken = getUser.getforgotPassToken();
-  //we are doing this because we do not want to save th user according to specified model in mongoose model(kam chalau h)
-  await getUser.save({ validateBeforeSave: false });
-
-  //at this url we will send the mail
-  const emailUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/password/reset/${forgotToken}`;
-
-  const message = `Copy this link to get reset option\n\n<a href="${emailUrl}">link</a>`;
-
-  const emailObject = {
-    mail: getUser.email,
-    subject: "Ecom App - password reset link",
-    message: message,
-  };
   try {
+    // Get the email from the request body
+    const { email } = req.body;
+
+    // Find the user with the provided email
+    const user = await User.findOne({ email });
+
+    // If the user is not found, return an error
+    if (!user) {
+      return next(new CustomError("Email not registered", 404));
+    }
+
+    // Generate the forgot password token
+    const forgotToken = user.getforgotPassToken();
+
+    // Temporarily disable mongoose validation before saving the user
+    await user.save({ validateBeforeSave: false });
+
+    // Build the reset password URL
+    const resetPasswordUrl = `${req.protocol}://${req.get(
+      "host"
+    )}/api/v1/password/reset/${forgotToken}`;
+
+    // Compose the email message
+    const message = `Copy this link to reset your password:\n\n${resetPasswordUrl}`;
+
+    // Create an email object
+    const emailObject = {
+      mail: user.email,
+      subject: "Ecom App - Password Reset Link",
+      message: message,
+    };
+
+    // Send the reset password email
     await sendEmail(emailObject);
 
+    // Respond with success
     res.status(200).json({
       success: true,
-      message: "Email sent sucessfuly",
+      message: "Email sent successfully",
     });
   } catch (error) {
-    getUser.forgotPasstoken = undefined;
-    getUser.forgotPassExpiry = undefined;
-    await getUser.save({ validateBeforeSave: false });
+    // Handle errors
+    console.error("Forgot Password Error:", error);
 
-    return next(new CustomError(error.message, 500));
+    // Rollback changes if there's an error during email sending
+    user.forgotPasstoken = undefined;
+    user.forgotPassExpiry = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    return next(new CustomError("Internal Server Error", 500));
   }
 });
 
-module.exports.passwordReset = BigPromise(async (req, res, next) => {});
+// Password reset controller
+module.exports.passwordReset = BigPromise(async (req, res, next) => {
+  try {
+    // Extracting the token from request parameter
+    const token = req.params.token;
+
+    // Creating a hash of the token using SHA-256
+    const encryptToken = crypto
+      .createHash("sha256")
+      .update(token)
+      .digest("hex");
+
+    // Finding the user with provided token and ensuring the token has not expired
+    const findUser = await User.findOne({
+      forgotPasstoken: encryptToken,
+      forgotPassExpiry: { $gt: Date.now() },
+    });
+
+    // Handling the case when no user is found for provided token
+    if (!findUser) {
+      return next(new CustomError("Token is invalid or expired", 400));
+    }
+
+    // Cheking if the password and confirm password match
+    if (req.body.password !== req.body.confirmPassword) {
+      return res.status(404).send({
+        success: false,
+        message: "password and confirm password does not match!",
+      });
+    }
+
+    // Updating the user's password , clearing reset token , and saving the changes
+    findUser.password = req.body.password;
+    findUser.forgotPasstoken = undefined;
+    findUser.forgotPassExpiry = undefined;
+    await findUser.save();
+
+    // Generating and setting a new authentication token for the user
+    cookieToken(findUser, res);
+
+    // Sending a success message
+    res.status(200).json({
+      success: true,
+      message: "Password reset successfully!",
+    });
+  } catch (error) {
+    // Handling any unexpected errors
+    console.error("Password Reset Error:", error);
+    return next(new CustomError("Internal server Error", 500));
+  }
+});

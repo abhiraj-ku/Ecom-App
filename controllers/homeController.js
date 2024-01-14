@@ -3,7 +3,7 @@ const BigPromise = require("../middlewares/bigPromise");
 exports.home = BigPromise((req, res) => {
   res.status(200).json({
     success: true,
-    greeting: "Hello from backend",
+    message: "Hello from backend",
   });
 });
 
@@ -11,7 +11,7 @@ exports.homeDummy = (req, res) => {
   try {
     res.status(200).json({
       success: true,
-      greeting: "Hello from dummy app",
+      message: "Hello from dummy app",
     });
   } catch (error) {
     console.log(error);
