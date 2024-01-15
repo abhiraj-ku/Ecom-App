@@ -1,4 +1,5 @@
 const express = require("express");
+const { isLoggedIn } = require("../middlewares/userData");
 const router = express.Router();
 const {
   signup,
@@ -6,6 +7,7 @@ const {
   logout,
   forgotPassword,
   passwordReset,
+  getLoggedInUserDetail,
 } = require("../controllers/userController");
 
 //all the routes
@@ -14,6 +16,7 @@ router.post("/login", login);
 router.get("/logout", logout);
 router.post("/forgotPassword", forgotPassword);
 router.post("/password/reset/:token", passwordReset);
+router.route("/userDashBoard").get(isLoggedIn, getLoggedInUserDetail);
 
 //exporting the router
 module.exports = router;

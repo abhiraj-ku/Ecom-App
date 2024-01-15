@@ -250,3 +250,20 @@ module.exports.passwordReset = BigPromise(async (req, res, next) => {
     return next(new CustomError("Internal server Error", 500));
   }
 });
+
+// User details controller
+module.exports.getLoggedInUserDetail = BigPromise(async (req, res, next) => {
+  // Extracting the user details from his/her id
+  const user = await User.findById(req.user.id);
+
+  //handling when no user is find
+  if (!user) {
+    return next(new CustomError("User Not found", 401));
+  }
+
+  // Sending success message
+  res.status(200).json({
+    success: true,
+    user,
+  });
+});
