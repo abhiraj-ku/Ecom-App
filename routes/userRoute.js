@@ -8,6 +8,7 @@ const {
   forgotPassword,
   passwordReset,
   getLoggedInUserDetail,
+  updatePassword
 } = require("../controllers/userController");
 
 //all the routes
@@ -17,6 +18,8 @@ router.get("/logout", logout);
 router.post("/forgotPassword", forgotPassword);
 router.post("/password/reset/:token", passwordReset);
 router.route("/userDashBoard").get(isLoggedIn, getLoggedInUserDetail);
+router.route("/password/update").post(isLoggedIn, updatePassword);
+
 
 //exporting the router
 module.exports = router;

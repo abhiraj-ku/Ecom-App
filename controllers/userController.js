@@ -158,7 +158,7 @@ module.exports.forgotPassword = BigPromise(async (req, res, next) => {
     }
 
     // Generate the forgot password token
-    const forgotToken = user.getforgotPassToken();
+    const forgotToken = User.getforgotPassToken();
 
     // Temporarily disable mongoose validation before saving the user
     await user.save({ validateBeforeSave: false });
@@ -191,9 +191,9 @@ module.exports.forgotPassword = BigPromise(async (req, res, next) => {
     console.error("Forgot Password Error:", error);
 
     // Rollback changes if there's an error during email sending
-    user.forgotPasstoken = undefined;
-    user.forgotPassExpiry = undefined;
-    await user.save({ validateBeforeSave: false });
+    User.forgotPasstoken = undefined;
+    User.forgotPassExpiry = undefined;
+    await User.save({ validateBeforeSave: false });
 
     return next(new CustomError("Internal Server Error", 500));
   }
@@ -266,4 +266,93 @@ module.exports.getLoggedInUserDetail = BigPromise(async (req, res, next) => {
     success: true,
     user,
   });
+});
+
+
+// Change password controller
+module.exports.updatePassword = BigPromise(async (req, res, next) => {
+  try {
+    // Extracting the id from the authenticated user in the request
+    const userId = req.user.id;
+
+    // Finding user based on 'userId' from request body
+    const user = await User.findById(userId).select("+password");
+
+    // Check if the user was found
+    if (!user) {
+      throw new CustomError("User not found", 404);
+    }
+
+    // Check if the old password is correct
+    const isOldPasswordCorrect = await user.isPassCorrect(req.body.oldPassword);
+
+    if (!isOldPasswordCorrect) {
+      throw new CustomError("Old password is incorrect", 400);
+    }
+
+    // Update the password and save the user details
+    user.password = req.body.password;
+    await user.save();
+
+    // Generate a new cookie token and send it in the response
+    cookieToken(user, res);
+
+    res.status(200).json({
+      success: true,
+      message: "Password updated successfully",
+    });
+  } catch (error) {
+    next(error); // Pass the error to the error handling middleware
+  }
+});
+
+
+// Update user details
+module.exports.changeUserDetails = BigPromise(async (req, res, next) => {
+  try {
+    const newData = {
+      name: req.body.name,
+      email: req.body.email,
+    };
+
+    // Check if a photo is included in the request
+    if (req.files && req.files.photo) {
+      const user = await User.findById(req.user.id);
+
+      // Delete the existing photo from cloudinary
+      const cloudinaryResponse = await Cloudinary.v2.uploader.destroy(user.photo.id);
+
+      // Upload the new photo to cloudinary
+      const photoResult = await Cloudinary.v2.uploader.upload(req.files.photo.tempFilePath, {
+        folder: "Ecom",
+        width: 150,
+        crop: "scale",
+      });
+
+      // Update the newData photo field
+      newData.photo = {
+        id: photoResult.public_id,
+        secure_url: photoResult.secure_url,
+      };
+    }
+
+    // Update the user data
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user.id,
+      newData,
+      {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false,
+      }
+    );
+
+    // Send the updated user details in the response
+    res.status(200).json({
+      success: true,
+      user: updatedUser, // Optionally, send the updated user details to the front end
+    });
+  } catch (error) {
+    next(error); // Pass the error to the error handling middleware
+  }
 });
