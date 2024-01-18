@@ -29,3 +29,15 @@ module.exports.isLoggedIn = BigPromise(async (req, res, next) => {
     return next(error);
   }
 });
+
+// Middlerware to check the role of user
+module.exports.customeRole = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new CustomError("You are not allowed to access this resource!")
+      );
+    }
+    next();
+  };
+};
