@@ -268,7 +268,6 @@ module.exports.getLoggedInUserDetail = BigPromise(async (req, res, next) => {
   });
 });
 
-
 // Change password controller
 module.exports.updatePassword = BigPromise(async (req, res, next) => {
   try {
@@ -306,7 +305,6 @@ module.exports.updatePassword = BigPromise(async (req, res, next) => {
   }
 });
 
-
 // Update user details
 module.exports.changeUserDetails = BigPromise(async (req, res, next) => {
   try {
@@ -320,14 +318,19 @@ module.exports.changeUserDetails = BigPromise(async (req, res, next) => {
       const user = await User.findById(req.user.id);
 
       // Delete the existing photo from cloudinary
-      const cloudinaryResponse = await Cloudinary.v2.uploader.destroy(user.photo.id);
+      const cloudinaryResponse = await Cloudinary.v2.uploader.destroy(
+        user.photo.id
+      );
 
       // Upload the new photo to cloudinary
-      const photoResult = await Cloudinary.v2.uploader.upload(req.files.photo.tempFilePath, {
-        folder: "Ecom",
-        width: 150,
-        crop: "scale",
-      });
+      const photoResult = await Cloudinary.v2.uploader.upload(
+        req.files.photo.tempFilePath,
+        {
+          folder: "Ecom",
+          width: 150,
+          crop: "scale",
+        }
+      );
 
       // Update the newData photo field
       newData.photo = {
@@ -337,15 +340,11 @@ module.exports.changeUserDetails = BigPromise(async (req, res, next) => {
     }
 
     // Update the user data
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      newData,
-      {
-        new: true,
-        runValidators: true,
-        useFindAndModify: false,
-      }
-    );
+    const updatedUser = await User.findByIdAndUpdate(req.user.id, newData, {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
+    });
 
     // Send the updated user details in the response
     res.status(200).json({
@@ -355,4 +354,138 @@ module.exports.changeUserDetails = BigPromise(async (req, res, next) => {
   } catch (error) {
     next(error); // Pass the error to the error handling middleware
   }
+});
+
+// Get all user controller
+module.exports.adminAllUser = BigPromise(async (req, res, next) => {
+  try {
+    const allUsers = await User.find();
+
+    // Send all users to response
+    res.status(200).json({
+      success: true,
+      allUsers,
+    });
+  } catch (error) {
+    // Handle errors appropriately, you might want to log the error or send a different response
+    console.error("Error in getAllUsers:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
+});
+
+// Admin get one user detail
+module.exports.adminGetOneUserDetail = BigPromise(async (req, res, next) => {
+  try {
+    // Get the user from the database
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    // If user is found, send success message
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    // Handle errors appropriately, you might want to log the error or send a different response
+    console.error("Error in getOneUserDetail:", error);
+    res.status(500).json({
+      success: false,
+      error: "Internal Server Error",
+    });
+  }
+});
+
+// update one user detail (Admin mode)
+module.exports.adminUpdateOneUserDetails = BigPromise(
+  async (req, res, next) => {
+    try {
+      // add a check for email and name in body
+      const requiredFields = ["name", "email"];
+      const missingFields = requiredFields.filter((field) => !req, body[field]);
+
+      if (missingFields > 0) {
+        return res.status(400).json({
+          success: false,
+          message: `Missing required field(s): ${missingFields.join(",")}`,
+        });
+      }
+
+      // get data from request body
+      const newData = {
+        name: req.body.name,
+        email: req.body.email,
+        role: req.body.role,
+      };
+
+      // update the user in database
+      const user = await User.findByIdAndUpdate(req.params.id, newData, {
+        new: true,
+        runValidators: true,
+        useFindAndModify: false,
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          error: "User not found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+      });
+    } catch (error) {
+      console.error("Error in adminUpdateOneUserDetails", error);
+      res.status(500).json({
+        success: false,
+        error: "Internal Server Error",
+      });
+    }
+  }
+);
+
+// Delete one User (Admin rights)
+module.exports.adminDeleteOneUser = BigPromise(async (req, res, next) => {
+  // find the user by id
+  const user = await User.findById(req.params.id);
+
+  // Check if user is present or not
+  if (!user) {
+    return next(new CustomError("No Such user found", 401));
+  }
+
+  // get image id of this user from db
+  const imageId = user.photo.id;
+
+  // delete the user photo i.e, uploaded to cloudinary
+  await Cloudinary.uploader.destroy(imageId);
+
+  // remove this user from db
+  await user.remove();
+
+  res.status(200).json({
+    success: true,
+    message:"User is removed"
+  });
+});
+
+
+// manage all user(Admin Right)
+module.exports.managerAllUser = BigPromise(async (req, res, next) => {
+  // select the user with role of user
+  const users = await User.find({ role: "user" });
+
+  res.status(200).json({
+    success: true,
+    users,
+  });
 });
