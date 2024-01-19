@@ -32,6 +32,8 @@ This repository hosts the backend API for an e-commerce project. The API provide
 6. **Security:**
    - Implement secure authentication and authorization mechanisms.
 
+## If you want to use this for your front-end/full stack project , feel free to clone this repo (maybe you can just attribute )
+
 ### Follow Us on Twitter:
 
 For updates and announcements, follow us on Twitter: [Twitter](https://twitter.com/abhirajabhi312)

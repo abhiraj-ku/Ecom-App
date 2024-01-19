@@ -25,8 +25,7 @@ app.use(
 );
 
 //setting up template engine
-app.set("view engine","ejs")
-
+app.set("view engine", "ejs");
 
 //morgon middleware needs to be on top (this is logger which logs users activity)
 app.use(morgon("tiny"));
@@ -34,15 +33,17 @@ app.use(morgon("tiny"));
 //import all the routes here
 const homeRoute = require("./routes/homeRoute");
 const userRoute = require("./routes/userRoute");
+const productRoute = require("./routes/productRoute");
 
 //router middleware
 app.use("/api/v1", homeRoute);
 app.use("/api/v1", userRoute);
+app.use("/api/v1", productRoute);
 
 //test route for template engine
-app.get("/signuptest",(req,res)=>{
-  res.render("signuptest")
-})
+app.get("/signuptest", (req, res) => {
+  res.render("signuptest");
+});
 
 //export app
 module.exports = app;
