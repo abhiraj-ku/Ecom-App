@@ -32,7 +32,11 @@ router.route("/userdashboard/update").post(isLoggedIn, changeUserDetails);
 router
   .route("/admin/users")
   .get(isLoggedIn, customeRole("admin"), adminAllUser);
-
+router
+  .route("/admin/user/:id")
+  .get(isLoggedIn, customeRole("admin"), adminGetOneUserDetail)
+  .put(isLoggedIn, customeRole("admin"), adminUpdateOneUserDetails)
+  .delete(isLoggedIn, customeRole("admin"), adminDeleteOneUser);
 // manager only routes
 router
   .route("/manager/users")
