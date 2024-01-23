@@ -33,11 +33,18 @@ module.exports.isLoggedIn = BigPromise(async (req, res, next) => {
 // Middlerware to check the role of user
 module.exports.customeRole = (...roles) => {
   return (req, res, next) => {
-    if (!roles.includes(req.user.role)) {
-      return next(
-        new CustomError("You are not allowed to access this resource!")
-      );
+    try {
+      if (!req.user || !roles.includes(req.user.role)) {
+        throw new CustomError(
+          "You are not allowed to access this resource!",
+          403
+        );
+      }
+
+      console.log("User Role:", req.user.role);
+      next();
+    } catch (error) {
+      next(error);
     }
-    next();
   };
 };

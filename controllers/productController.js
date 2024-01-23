@@ -21,6 +21,7 @@ module.exports.addProduct = BigPromise(async (req, res, next) => {
     }
 
     const uploadedImages = await uploadPhotosToCloudinary(req.files.photos);
+
     req.body.photos = uploadedImages;
     req.body.user = req.user.id;
 
