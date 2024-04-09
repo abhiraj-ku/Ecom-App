@@ -34,11 +34,12 @@ app.use(morgon("tiny"));
 const homeRoute = require("./routes/homeRoute");
 const userRoute = require("./routes/userRoute");
 const productRoute = require("./routes/productRoute");
-
+const paymentRoute = require("./routes/paymentRoute");
 //router middleware
 app.use("/api/v1", homeRoute);
 app.use("/api/v1", userRoute);
 app.use("/api/v1", productRoute);
+app.use("/api/v1", paymentRoute);
 
 //test route for template engine
 app.get("/signuptest", (req, res) => {
