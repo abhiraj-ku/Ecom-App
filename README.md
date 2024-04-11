@@ -180,3 +180,15 @@ These routes are used to handle payments using Stripe and Razorpay integration.
   - Initiates payment processing using Razorpay integration.
   - Requires user to be logged in.
   - Example: `POST /api/v1/pay/razorpay`
+
+## 🐛 Bug Reporting
+
+Feel free to [open an issue](https://github.com/abhiraj-ku/Ecom-App/issues) on GitHub if you find any bug.
+
+## ⭐ Feature Request
+
+- Feel free to [Open an issue](https://github.com/abhiraj-ku/Ecom-App/issues) on GitHub to request any additional features you might need for your use case.
+
+# Connect with me on:
+
+- [LinkedIn](https://www.linkedin.com/in/abhishek-ko/). I'd love ❤️️ to hear where you are using this library.
