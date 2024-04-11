@@ -191,4 +191,4 @@ Feel free to [open an issue](https://github.com/abhiraj-ku/Ecom-App/issues) on G
 
 # Connect with me on:
 
-- [LinkedIn](https://www.linkedin.com/in/abhishek-ko/). I'd love ❤️️ to hear where you are using this library.
+- [LinkedIn](https://www.linkedin.com/in/abhishek-ko/). It takes few seconds to click on that 'connect' button 😉.
