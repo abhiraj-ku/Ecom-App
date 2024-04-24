@@ -13,7 +13,7 @@ jobs:
       - name: checkout source repo
         uses: actions/checkout@v4
       - name: login to docker hub
-        run: docker login -u ${{secrets.DOCKER_USERNAME}} -p ${{secrets.DOCKER_PASS}}
+        run: docker login -u `${{secrets.DOCKER_USERNAME}}` -p `${{secrets.DOCKER_PASS}}`
       - name: build docker image
         run: docker build -t arkostar/shirtup .
       - name: publish image to docker
