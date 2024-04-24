@@ -1,8 +1,11 @@
 const mongoose = require("mongoose");
 
+const password = encodeURIComponent(process.env.MOGODB_PASS.trim());
+const connectionString = `mongodb+srv://arko:${password}@cluster0.i7ufc6c.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+
 const connectDb = () => {
   mongoose
-    .connect(process.env.DB_URL)
+    .connect(connectionString)
     .then(console.log(`DB connection successful`))
     .catch((error) => {
       console.log(`DB connection issue`);
