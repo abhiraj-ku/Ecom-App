@@ -4,28 +4,35 @@ on:
   push:
     branches:
       - main
+
 jobs:
   build:
-    name: install ubuntu
+    name: Install Ubuntu
     runs-on: ubuntu-latest
 
     steps:
-      - name: checkout source repo
+      - name: Checkout source repo
         uses: actions/checkout@v4
-      - name: login to docker hub
-        run: docker login -u `${{secrets.DOCKER_USERNAME}}` -p `${{secrets.DOCKER_PASS}}`
-      - name: build docker image
+
+      - name: Login to Docker Hub
+        run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASS }}
+
+      - name: Build Docker image
         run: docker build -t arkostar/shirtup .
-      - name: publish image to docker
+
+      - name: Publish image to Docker Hub
         run: docker push arkostar/shirtup:latest
 
-      - name: setup Node js
+      - name: Setup Node.js
         uses: actions/setup-node@v2
+
   deploy:
     needs: build
     runs-on: self-hosted
+
     steps:
-      - name: pull image from docker hub
+      - name: Pull image from Docker Hub
         run: docker pull arkostar/shirtup:latest
+
       - name: Run Docker Container
-        run: docker run -d -p 5000:5000 --name node-js-Ecom-container -e MOGODB_PASS=`${{secrets.MOGODB_PASS}}` arkostar/shirtup
+        run: docker run -d -p 5000:5000 --name node-js-Ecom-container -e MOGODB_PASS= `${{ secrets.MOGODB_PASS}}` arkostar/shirtup
